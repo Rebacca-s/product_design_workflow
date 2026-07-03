@@ -1,0 +1,15 @@
+# 本地前端项目，不提交到 product_design_workflow 仓库
+local_projects/frontend/**
+
+# 保留占位文件和说明文件
+!local_projects/frontend/
+!local_projects/frontend/.gitkeep
+!local_projects/frontend/README.md
+
+# 常见前端产物
+**/node_modules/
+**/dist/
+**/build/
+**/.env
+**/.env.*
+**/.DS_Store

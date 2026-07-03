@@ -26,6 +26,42 @@
 14. **必须先规划再生成。** 每次必须先生成 `00_交付物与章节规划.md`，明确本次启用哪些交付物和章节。
 15. **多需求输入时，先归组再生成。** 当一次输入多个需求，先识别需求项，按相关度归组为需求包，再按需求包生成交付物。不逐个生成 PRD，也不全部塞进一个 PRD。需求包之间相互独立，可独立开发、独立验收。
 16. **版本文件夹只是分类容器。** 不生成版本总览文档，不生成版本级 PRD 主文档。
+17. **product-start 只负责产品设计，不修改前端代码。** 它可以读取 `context/products/` 和 `local_projects/frontend/` 理解现状，但代码修改由 `/frontend-implement` 负责。
+18. **product-start 和 frontend-implement 是两个独立 Skill。** 产品需求设计和前端代码实现必须拆开，不能混在一个 Skill 里。
+
+## 双 Skill 架构
+
+本项目有两个核心 Skill：
+
+```text
+模糊需求
+  ↓
+/product-start          ← 产品需求设计工作流
+  ↓
+产品交付物（PRD + 原型说明 + 检查清单）
+  ↓
+/frontend-implement    ← 前端代码实现工作流
+  ↓
+前端代码修改
+```
+
+| Skill | 职责 | 修改代码 |
+|-------|------|----------|
+| `/product-start` | 需求分析、PRD 生成、原型说明、检查清单 | ❌ 不修改 |
+| `/frontend-implement` | 基于已确认的交付物修改前端代码 | ✅ 负责 |
+
+## 目录体系
+
+### 业务上下文与本地项目
+
+| 目录 | 是否提交 | 作用 |
+|------|----------|------|
+| `context/products/` | 提交 | 沉淀业务背景、页面地图、角色权限、流程、字段、接口说明 |
+| `local_projects/frontend/` | 不提交 | 放真实前端源码，让 Claude Code 读取和修改代码 |
+
+- `context/products/` 是可提交的业务上下文区
+- `local_projects/frontend/` 是不可提交的本地源码区
+- 真实前端项目放在 `local_projects/frontend/` 下，不提交到 product_design_workflow 仓库
 
 ## 模板体系
 
@@ -66,9 +102,18 @@
 - 规则优化 → 更新 `rules/`
 - 预设调整 → 更新 `templates/presets/` + `rules/PRD预设使用规则.md`
 - 章节增删 → 按 `rules/PRD章节增删规则.md` 三步登记
+- 新的产品上下文 → 更新 `context/products/`
+- 新的前端项目 → 放入 `local_projects/frontend/`（不提交），项目说明写入 `context/products/`
 
 ## 调用 Skill
 
-当我使用 `/product-start <需求描述>` 时，你应调用 `product-start` Skill，执行完整的产品设计工作流。
+| Skill | 用途 | 触发方式 |
+|-------|------|----------|
+| `product-start` | 产品需求设计工作流 | `/product-start <需求描述>` |
+| `frontend-implement` | 前端代码实现工作流 | `/frontend-implement <需求目录> <前端项目路径>` |
+
+当我使用 `/product-start <需求描述>` 时，调用 `product-start` Skill，执行完整的产品设计工作流。
+
+当我使用 `/frontend-implement` 时，调用 `frontend-implement` Skill，基于已确认的交付物修改前端代码。
 
 你也可以主动建议我使用 `/product-start` 来启动一个新的产品设计任务。

@@ -45,12 +45,46 @@
 | 6 | 生成原型相关交付物 | 原型说明 + HTML 提示词（如启用） |
 | 7 | 生成研发交付检查清单 | `07_研发交付检查清单.md` |
 
+### 启动前端实现工作流
+
+```text
+/frontend-implement outputs/需求名称 local_projects/frontend/项目名称
+```
+
+例如：
+
+```text
+/frontend-implement outputs/哆爱宠分销记录搜索 local_projects/frontend/duoai_pet_frontend
+```
+
+### 双 Skill 架构
+
+```text
+模糊需求
+  ↓
+/product-start          ← 产品需求设计（不改代码）
+  ↓
+产品交付物（PRD + 原型说明 + 检查清单）
+  ↓
+/frontend-implement    ← 前端代码实现（基于交付物改代码）
+  ↓
+前端代码修改
+```
+
+| Skill | 职责 | 修改代码 |
+|-------|------|----------|
+| `/product-start` | 需求分析、PRD 生成、原型说明、检查清单 | 不修改 |
+| `/frontend-implement` | 基于已确认的交付物修改前端代码 | 负责 |
+
+> `/product-start` 可以读取 `context/products/` 和 `local_projects/frontend/` 用于理解业务现状，但默认不修改代码。代码修改由 `/frontend-implement` 负责。 |
+
 ## 项目结构
 
 ```text
 .
 ├── CLAUDE.md                              # 项目级 AI 行为配置
 ├── README.md                              # 本文档
+├── .gitignore                             # Git 忽略规则（排除本地前端项目）
 │
 ├── rules/                                 # 规则体系（9 个文件）
 │   ├── 需求类型识别规则.md                 # 10 种需求类型定义
@@ -68,23 +102,22 @@
 │   └── 02_动态PRD章节装配流程.md           # 章节装配详解
 │
 ├── templates/                             # 文档模板（三层分层）
-│   ├── deliverables/                       # 交付物级模板：一整份文档怎么写
-│   │   ├── BRD_交付物模板.md                （非 AI 新产品/大功能用）
-│   │   ├── AIGC_BRD_8章节交付物模板.md      （AI/AIGC 项目立项优先使用）
+│   ├── deliverables/                       # 交付物级模板
+│   │   ├── BRD_交付物模板.md
+│   │   ├── AIGC_BRD_8章节交付物模板.md
 │   │   ├── PRD主文档骨架模板.md
 │   │   ├── 需求澄清问题_交付物模板.md
 │   │   ├── 原型说明_交付物模板.md
 │   │   └── 研发交付检查清单_交付物模板.md
-│   ├── presets/                            # PRD 预设：某类需求推荐启用哪些章节
+│   ├── presets/                            # PRD 预设
 │   │   ├── 新产品模板_PRD预设.md
 │   │   ├── AI功能模板_PRD预设.md
 │   │   ├── 非AI功能模板_PRD预设.md
 │   │   ├── 小迭代模板_PRD预设.md
 │   │   ├── 后台管理功能模板_PRD预设.md
 │   │   └── 页面改版模板_PRD预设.md
-│   └── sections/                           # 章节级模板：某个 PRD 章节怎么写
+│   └── sections/                           # 章节级模板
 │       ├── 通用/
-│       │   └── 页面与交互说明_章节模板.md
 │       ├── 条件启用/
 │       └── AI专属/
 │
@@ -95,6 +128,23 @@
 │   ├── 非AI功能PRD写作方法论.md
 │   ├── 小迭代需求写作方法论.md
 │   └── 页面与交互设计方法论.md
+│
+├── context/                               # 业务上下文（提交）
+│   └── products/
+│       └── 示例产品/
+│           ├── 00_业务概览.md
+│           ├── 01_角色与权限.md
+│           ├── 02_页面地图.md
+│           ├── 03_核心业务流程.md
+│           ├── 04_字段与状态说明.md
+│           ├── 05_前端项目说明.md
+│           └── 06_接口与数据来源.md
+│
+├── local_projects/                        # 本地项目接入区
+│   ├── README.md                           # 说明文档（提交）
+│   └── frontend/                           # 前端项目（不提交）
+│       ├── .gitkeep
+│       └── README.md
 │
 ├── examples/                              # 案例参考
 │   ├── 模糊需求示例.md
@@ -119,8 +169,11 @@
 │       ├── 需求包02_名称/
 │       └── 需求包03_名称/
 │
-└── .claude/skills/product-start/          # Skill 定义
-    └── SKILL.md
+└── .claude/skills/                        # Skill 定义
+    ├── product-start/
+    │   └── SKILL.md
+    └── frontend-implement/
+        └── SKILL.md
 ```
 
 ## 模板三层分层
@@ -216,3 +269,14 @@
 - 更多 Skill：`/product-review`、`/product-iterate`
 - 用户研究模板
 - 竞品分析模板
+
+## context/products/ 与 local_projects/frontend/ 的区别
+
+| 目录 | 是否提交 | 作用 |
+|------|----------|------|
+| `context/products/` | 提交 | 沉淀业务背景、页面地图、角色权限、流程、字段、接口说明 |
+| `local_projects/frontend/` | 不提交 | 放真实前端源码，让 Claude Code 读取和修改代码 |
+
+- `context/products/` 是手工维护的产品现状文档
+- `local_projects/frontend/` 是真实前端项目的本地工作副本
+- 真实前端项目通过 `.gitignore` 排除，不提交到 product_design_workflow 仓库
