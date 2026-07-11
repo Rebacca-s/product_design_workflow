@@ -1,0 +1,51 @@
+digraph G {
+    rankdir=LR;
+    fontname="Microsoft YaHei";
+    graph [fontname="Microsoft YaHei"];
+    node [fontname="Microsoft YaHei", shape=box, style="rounded,filled", color="#90A4AE", fontsize=10];
+    edge [fontname="Microsoft YaHei", color="#B0BEC5", fontcolor="#90A4AE", fontsize=9];
+
+    subgraph cluster_active_workflow {
+        label="主动链路 — 功能操作（Workflow + AIGC）";
+        color="#1565C0";
+        fontsize=12;
+        立项 [fillcolor="#BBDEFB"];
+        诊断与计划 [fillcolor="#BBDEFB"];
+        选题_wf [fillcolor="#BBDEFB", label="选题"];
+        文案创作 [fillcolor="#BBDEFB"];
+        图片创作 [fillcolor="#BBDEFB"];
+        视频创作 [fillcolor="#BBDEFB"];
+        内容审核 [fillcolor="#BBDEFB"];
+        投放发布 [fillcolor="#BBDEFB"];
+
+        立项 -> 诊断与计划 -> 选题_wf -> {文案创作, 图片创作};
+        文案创作 -> 视频创作;
+        图片创作 -> 视频创作;
+        视频创作 -> 内容审核 -> 投放发布;
+    }
+
+    subgraph cluster_active_agent {
+        label="主动链路 — AI员工（Agent 编排）";
+        color="#E65100";
+        fontsize=12;
+        用户对话 [fillcolor="#FFE0B2", shape=ellipse, style="rounded,filled", color="#FFCC80"];
+        规划Agent_flow [fillcolor="#FFE0B2", label="规划Agent\n(意图·拆解·编排)"];
+        能力调用 [fillcolor="#FFE0B2", label="能力调用\n(选题·文案·视频)"];
+        结果交付 [fillcolor="#FFE0B2"];
+
+        用户对话 -> 规划Agent_flow -> 能力调用 -> 结果交付;
+        结果交付 -> 用户对话 [xlabel="确认/修正", style=dotted, color="#BDBDBD"];
+    }
+
+    subgraph cluster_passive {
+        label="被动链路（定时触发）";
+        color="#2E7D32";
+        fontsize=12;
+        定时触发 [fillcolor="#C8E6C9"];
+        自动创作 [fillcolor="#C8E6C9", label="自动创作\n(AIGC)"];
+        推送确认 [fillcolor="#C8E6C9"];
+        一键发布 [fillcolor="#C8E6C9"];
+
+        定时触发 -> 自动创作 -> 推送确认 -> 一键发布;
+    }
+}
