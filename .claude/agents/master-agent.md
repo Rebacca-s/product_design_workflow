@@ -86,6 +86,29 @@
 
 不得跳过前置阶段。
 
+### 4a. 产品设计完成后的自动 Review 编排（v4.2 新增）
+
+当 Product Agent → product-start 完成核心交付物（BRD/PRD/页面与交互说明/原型说明）后，Master Agent 必须自动编排下一阶段：
+
+```text
+product-start 完成 → 状态："设计完成，待评审"
+    ↓
+Master Agent 自动路由 → Review Agent → prd-review
+    ↓
+Review Agent 输出《产品设计评审报告》
+    ↓
+等待用户选择：
+  A. 根据问题修改 → Product Agent → product-start（修订）
+  B. 继续进入前端 → Frontend Agent → frontend-implement
+  C. 保留当前版本 → 结束
+```
+
+**关键约束**：
+- 核心交付物生成后，不得直接结束或直接进入前端实现
+- 必须先经过 Review Agent 评审
+- 评审只输出问题和建议，不自动修改
+- 用户确认后，Master Agent 再路由到对应 Agent 执行
+
 ### 5. 路由状态展示
 
 每次处理用户输入时，回复开头必须简要展示路由结果：
