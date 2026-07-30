@@ -16,19 +16,56 @@
 Agent：[实际调用的Agent] | Skill：[实际调用的Skill] | CLI：[实际CLI命令/无] | MCP：[实际MCP/无]
 ```
 
-### 自动路由表
+### 自动路由表（评审对象优先于关键词）
+
+**非评审类**：
 
 | 用户输入关键词 | → Agent | → Skill |
 |---|---|---|
 | 页面/字段/按钮/规则/状态/流程/交互/PRD/需求/设计/功能 | Product Agent | product-start |
-| 检查/审核/有没有问题/是否完整/逻辑/冲突 | Review Agent | prd-review |
-| 优化方案/评审页面/找漏洞/排查流程 | Review Agent | prd-review(模式B) |
 | 写页面/改前端/改代码/实现/开发/修复页面 | Frontend Agent | frontend-implement |
 | 其他（概念解释/简单讨论） | General Agent | 无 |
+
+**评审类（先判断对象，再路由）**：
+
+| 评审对象 | 用户说了什么 | → Agent | → Skill |
+|---|---|---|---|
+| 产品方案 | "评审需求""检查PRD""看看设计是否合理""业务逻辑有没有问题""审核方案" | Review Agent | prd-review |
+| 前端代码 | "评审页面实现""检查前端代码""对刚刚实现的代码做评审""看看页面有没有遗漏""检查代码是否符合需求""验收前端""按钮能不能用""交互是否完整" | Frontend Agent | frontend-implement（Frontend Review） |
+| 跨阶段（先产品后前端） | "看看PRD和页面实现是否一致""从需求到代码全面检查" | Review Agent → Frontend Agent | prd-review → frontend-implement |
+
+**决策规则**：
+
+```text
+出现"评审/检查/审核/校验/验收"关键词时：
+  第1步：识别评审对象
+    ├── 对象是需求/PRD/方案/设计/业务逻辑 → Review Agent → prd-review
+    ├── 对象是代码/页面/前端/实现/刚刚写的 → Frontend Agent → frontend-implement（Frontend Review）
+    └── 模糊不清 → 向用户确认评审对象后再路由
+  第2步：结合对话上下文
+    ├── 上一条是前端实现 → 默认对象是前端代码 → Frontend Agent
+    └── 上一条是产品设计 → 默认对象是产品方案 → Review Agent
+``` |
 
 ### 绝对禁止
 
 ❌ 不输出路由状态和调用汇总 ❌ 不路由就改PRD/需求/代码 ❌ 看到关键词但不路由 ❌ 用户没打/skill名就跳过Skill
+
+### ⚠️ product-start 完成后必须立即调用 Review Agent（v4.2 强制）
+
+> **当 product-start 生成了 PRD、原型说明等核心交付物后，必须在同一轮回复中继续调用 Review Agent → prd-review 进行评审。不得先结束回复、等用户下一轮再手动要求评审。这是 product-start 工作流的内置阶段，不是可选的。**
+
+```
+product-start 完成交付物生成
+    ↓
+（同一轮回复中，不停顿）
+    ↓
+自动调用 Review Agent → prd-review
+    ↓
+输出《产品设计评审报告》
+    ↓
+给出用户选择：A.修改 B.进入前端 C.保留
+```
 
 ---
 
@@ -181,11 +218,17 @@ Frontend Agent
 需求与原型一致性检查 → 原功能回归检查
     ↓
 更新页面计划 + 输出结果
+    ↓
+Frontend Review 自检（对照PRD/原型说明检查页面/字段/交互/状态/数据 7项）
+    ↓
+输出实现检查报告（P0问题修复后重新自检）
+    ↓
+完成交付
 ```
 
 需求未确认时：Frontend Agent → 停止 → 返回 Product Agent 或 Review Agent
 
-> **关键约束**：不得在没有页面计划的情况下直接编码。Mock 数据不覆盖真实接口。发现业务需求变更必须返回 Product Agent 同步 PRD。
+> **关键约束**：不得在没有页面计划的情况下直接编码。Mock 数据不覆盖真实接口。发现业务需求变更必须返回 Product Agent 同步 PRD。实现完成后必须通过 Frontend Review 自检方可交付。
 
 #### 评审任务（v4.2 双模式）
 

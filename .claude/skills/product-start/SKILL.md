@@ -840,7 +840,9 @@ C. 修改或补充需求描述
 | 下一步 | 自动进入 Review Agent 评审阶段 |
 ```
 
-### 2. 自动触发 Review Agent 评审（v4.2 新增）
+### 2. 自动触发 Review Agent 评审（v4.2 新增 — 强制执行）
+
+> ⚠️ **本步骤是 product-start 工作流的内置阶段，不可跳过。必须在同一轮回复中完成，不得先结束回复再等用户下一轮要求评审。**
 
 **触发条件**：当 product-start 生成了以下任一核心交付物时，自动进入评审：
 
@@ -852,9 +854,7 @@ C. 修改或补充需求描述
 **流程**：
 
 ```text
-product-start 完成交付物生成
-    ↓
-输出"设计完成，待评审"
+product-start 完成交付物生成（同一条回复中，不停顿）
     ↓
 Master Agent 自动路由 → Review Agent → prd-review
     ↓
@@ -893,3 +893,4 @@ Review Agent 执行四方面检查：
 6. **非 AI 需求不得生成 AI 章节**：C1-C10 全部不启用。
 7. **小迭代必须简化**：不能和新产品用同样的完整模板。
 8. **product-start 只设计不改代码**：可以读取 `context/products/` 和 `local_projects/frontend/` 理解现状，但默认不修改前端代码。代码修改由 Frontend Agent → frontend-implement 负责。
+9. **交付物完成后必须立即进入评审（v4.2 强制）**：PRD、原型说明等核心交付物生成后，必须在同一轮回复中调用 Review Agent → prd-review 进行评审。不得先结束回复、等用户下一轮再手动要求评审。这是 product-start 工作流的内置阶段，不是可选项。
